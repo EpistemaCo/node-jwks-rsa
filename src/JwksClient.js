@@ -114,7 +114,7 @@ export class JwksClient {
         return cb(new SigningKeyNotFoundError('No KID specified and JWKS endpoint returned more than 1 key'));
       }
 
-      const key = keys.find(k => !kidDefined || k.kid === kid);
+      const key = keys.find(k => !kidDefined || k.kid.includes(kid));
       if (key) {
         return cb(null, key);
       } else {
