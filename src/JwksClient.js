@@ -113,15 +113,15 @@ export class JwksClient {
         const kidDefined = kid !== undefined && kid !== null;
         if (!kidDefined && keys.length > 1) {
           this.logger('No KID specified and JWKS endpoint returned more than 1 key');
-          return resolve(new SigningKeyNotFoundError('No KID specified and JWKS endpoint returned more than 1 key'));
+          return reject(new SigningKeyNotFoundError('No KID specified and JWKS endpoint returned more than 1 key'));
         }
 
         const key = keys.find(k => !kidDefined || k.kid.includes(kid));
         if (key) {
-          return resolve(null, key);
+          return resolve(key);
         } else {
           this.logger(`Unable to find a signing key that matches '${kid}'`);
-          return resolve(new SigningKeyNotFoundError(`Unable to find a signing key that matches '${kid}'`));
+          return reject(new SigningKeyNotFoundError(`Unable to find a signing key that matches '${kid}'`));
         }
       });
     });
