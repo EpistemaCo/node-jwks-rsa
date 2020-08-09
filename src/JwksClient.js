@@ -100,27 +100,31 @@ export class JwksClient {
     });
   }
 
-  getSigningKey = (kid, cb) => {
-    this.logger(`Fetching signing key for '${kid}'`);
+  getSigningKey = (kid) => {
 
-    this.getSigningKeys((err, keys) => {
-      if (err) {
-        return cb(err);
-      }
+    return new Promise((resolve, reject) => {
+      this.logger(`Fetching signing key for '${kid}'`);
 
-      const kidDefined = kid !== undefined && kid !== null;
-      if (!kidDefined && keys.length > 1) {
-        this.logger('No KID specified and JWKS endpoint returned more than 1 key');
-        return cb(new SigningKeyNotFoundError('No KID specified and JWKS endpoint returned more than 1 key'));
-      }
+      this.getSigningKeys((err, keys) => {
+        if (err) {
+          return reject(err);
+        }
 
-      const key = keys.find(k => !kidDefined || k.kid.includes(kid));
-      if (key) {
-        return cb(null, key);
-      } else {
-        this.logger(`Unable to find a signing key that matches '${kid}'`);
-        return cb(new SigningKeyNotFoundError(`Unable to find a signing key that matches '${kid}'`));
-      }
+        const kidDefined = kid !== undefined && kid !== null;
+        if (!kidDefined && keys.length > 1) {
+          this.logger('No KID specified and JWKS endpoint returned more than 1 key');
+          return resolve(new SigningKeyNotFoundError('No KID specified and JWKS endpoint returned more than 1 key'));
+        }
+
+        const key = keys.find(k => !kidDefined || k.kid.includes(kid));
+        if (key) {
+          return resolve(null, key);
+        } else {
+          this.logger(`Unable to find a signing key that matches '${kid}'`);
+          return resolve(new SigningKeyNotFoundError(`Unable to find a signing key that matches '${kid}'`));
+        }
+      });
     });
+
   }
 }
